@@ -1,0 +1,14 @@
+Look at assignments 
+Finish up on Github - creating tags on the powershell locally and pushing to github
+Github actions
+Gitlab
+
+Create your repo on Github - qa-practice
+Clone it to your local machine using git clone.
+Create a new branch - firstletternameLastlettername/qa001-qa-git-practice da/qa001-qa-git-practice
+Create a file called test-notes.md and write 5 bullet points about what you have learnt so far.
+Stage the file with git add, commit it with a meaningful message, and push it.
+View your commit on GitHub — click the commit hash to see the diff
+Create a pull request, add me a collaborator, assign me as a reviewer
+
+Get a remote branch into your local machine
