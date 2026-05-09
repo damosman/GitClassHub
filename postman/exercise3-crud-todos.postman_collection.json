@@ -60,9 +60,9 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "// Verify the create operation is accepted",
-              "pm.test('Status code is 200 (DummyJSON simulates creation)', function () {",
-              "    pm.response.to.have.status(200);",
+              "// Verify the create operation is accepted — DummyJSON returns 201 Created for POST /todos/add",
+              "pm.test('Status code is 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
               "});",
               "",
               "// Verify a new ID is assigned and returned in the response",

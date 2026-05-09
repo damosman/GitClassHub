@@ -89,6 +89,7 @@ jobs:
 
       # Step 5: Exercise 1 — GET requests, query parameters, and field selection
       - name: Exercise 1 - Explore the Products API
+        id: ex1
         run: |
           newman run postman/exercise1-products-api.postman_collection.json \
             --environment postman/dummyjson-environment.json \
@@ -99,6 +100,7 @@ jobs:
 
       # Step 6: Exercise 2 — boundary and invalid input testing using status codes
       - name: Exercise 2 - Test Status Codes Systematically
+        id: ex2
         run: |
           newman run postman/exercise2-status-codes.postman_collection.json \
             --environment postman/dummyjson-environment.json \
@@ -109,6 +111,7 @@ jobs:
 
       # Step 7: Exercise 3 — full CRUD lifecycle on the Todos resource
       - name: Exercise 3 - CRUD on Todos
+        id: ex3
         run: |
           newman run postman/exercise3-crud-todos.postman_collection.json \
             --environment postman/dummyjson-environment.json \
@@ -119,6 +122,7 @@ jobs:
 
       # Step 8: Exercise 4 — JWT authentication flow and all auth edge cases
       - name: Exercise 4 - Authentication Flow
+        id: ex4
         run: |
           newman run postman/exercise4-auth-flow.postman_collection.json \
             --environment postman/dummyjson-environment.json \
@@ -129,6 +133,7 @@ jobs:
 
       # Step 9: Exercise 5 — pagination boundaries, invariant checks, and edge cases
       - name: Exercise 5 - Pagination Deep Dive
+        id: ex5
         run: |
           newman run postman/exercise5-pagination.postman_collection.json \
             --environment postman/dummyjson-environment.json \
@@ -137,7 +142,25 @@ jobs:
             --reporter-htmlextra-title "Exercise 5 - Pagination Deep Dive"
         continue-on-error: true
 
-      # Step 10: Upload all generated HTML reports as a downloadable workflow artifact.
+      # Step 10: Gate step — fails the job if any exercise collection had test failures.
+      #          Runs even when prior steps fail (continue-on-error) so all collections always execute.
+      #          Uses step outcome (raw result before continue-on-error) to detect real failures.
+      - name: Fail if any exercise had test failures
+        if: always()
+        run: |
+          FAILED=0
+          if [ "${{ steps.ex1.outcome }}" = "failure" ]; then echo "Exercise 1 FAILED"; FAILED=1; fi
+          if [ "${{ steps.ex2.outcome }}" = "failure" ]; then echo "Exercise 2 FAILED"; FAILED=1; fi
+          if [ "${{ steps.ex3.outcome }}" = "failure" ]; then echo "Exercise 3 FAILED"; FAILED=1; fi
+          if [ "${{ steps.ex4.outcome }}" = "failure" ]; then echo "Exercise 4 FAILED"; FAILED=1; fi
+          if [ "${{ steps.ex5.outcome }}" = "failure" ]; then echo "Exercise 5 FAILED"; FAILED=1; fi
+          if [ "$FAILED" -eq 1 ]; then
+            echo "One or more Newman exercises had test failures. See the HTML reports in the artifact."
+            exit 1
+          fi
+          echo "All exercises passed."
+
+      # Step 11: Upload all generated HTML reports as a downloadable workflow artifact.
       #          Runs even when individual exercise steps fail so reports are always available.
       - name: Upload Newman Test Reports
         uses: actions/upload-artifact@v4

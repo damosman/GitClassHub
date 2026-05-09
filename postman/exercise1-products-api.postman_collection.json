@@ -237,12 +237,17 @@
               "    pm.expect(jsonData.products.length).to.be.greaterThan(0);",
               "});",
               "",
-              "// Verify all returned product titles contain the search keyword (case-insensitive)",
-              "pm.test('All returned product titles contain the keyword phone', function () {",
+              "// NOTE: DummyJSON search is full-text across title, description, brand, and other",
+              "// fields — not title-only. Some results may not have 'phone' in their title.",
+              "// We assert that at least one result is title-relevant and log all titles for review.",
+              "pm.test('At least one returned product title contains the keyword phone', function () {",
               "    var jsonData = pm.response.json();",
-              "    jsonData.products.forEach(function (product) {",
-              "        pm.expect(product.title.toLowerCase()).to.include('phone');",
+              "    var titlesWithPhone = jsonData.products.filter(function (p) {",
+              "        return p.title.toLowerCase().includes('phone');",
               "    });",
+              "    console.log('Products matching phone in title: ' + titlesWithPhone.length + ' of ' + jsonData.products.length);",
+              "    jsonData.products.forEach(function (p) { console.log(' - ' + p.title); });",
+              "    pm.expect(titlesWithPhone.length).to.be.greaterThan(0);",
               "});"
             ]
           }
