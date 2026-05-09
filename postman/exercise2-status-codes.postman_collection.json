@@ -1,0 +1,219 @@
+{
+  "info": {
+    "_postman_id": "760c0c65-8f1f-49de-9ddf-ea2cc1e00f63",
+    "name": "Exercise 2 - Test Status Codes Systematically",
+    "description": "Beginner: Learn to test boundary and invalid inputs systematically against the DummyJSON Products API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19975965"
+  },
+  "item": [
+    {
+      "name": "2.1 GET Valid Product (ID 1) - Expect 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Happy path: a valid integer ID must return 200",
+              "pm.test('Status code is 200 for a valid product ID', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Capture and log the response time for baseline benchmarking",
+              "pm.test('Response time captured (baseline for SLA tracking)', function () {",
+              "    console.log('Response time for GET /products/1: ' + pm.response.responseTime + 'ms');",
+              "    pm.expect(pm.response.responseTime).to.be.a('number');",
+              "});",
+              "",
+              "// Verify the response body belongs to the correct resource",
+              "pm.test('Response body contains the requested product (id=1)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(1);",
+              "    pm.expect(jsonData).to.have.property('title');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/1",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        },
+        "description": "Step 1: GET /products/1 — happy path for a known valid ID. Expect 200. Record response time."
+      },
+      "response": []
+    },
+    {
+      "name": "2.2 GET Non-Existent Product (ID 99999) - Expect 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// A product ID that does not exist must return 404 (Not Found)",
+              "pm.test('Status code is 404 for a non-existent product ID', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "// Verify the error response body is descriptive (not generic)",
+              "pm.test('Error response contains a descriptive message', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    pm.expect(jsonData.message).to.be.a('string');",
+              "    pm.expect(jsonData.message.length).to.be.greaterThan(0);",
+              "    console.log('Error message: ' + jsonData.message);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/99999",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "99999"
+          ]
+        },
+        "description": "Step 2: GET /products/99999 — ID beyond range. Expect 404. Read the error message to verify it is descriptive."
+      },
+      "response": []
+    },
+    {
+      "name": "2.3 GET Product with Zero ID - Boundary Test",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Boundary test: ID=0 is below the minimum valid ID (1) and should be rejected",
+              "pm.test('Zero ID is treated as invalid (expect 404)', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "// Document the actual API behaviour for this boundary case",
+              "pm.test('API returns a descriptive error for ID=0', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    console.log('[Boundary] GET /products/0 — Status: ' + pm.response.code + ' | Message: ' + jsonData.message);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/0",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "0"
+          ]
+        },
+        "description": "Step 3: GET /products/0 — boundary test. Is 0 a valid ID? Document the status code and message."
+      },
+      "response": []
+    },
+    {
+      "name": "2.4 GET Product with Negative ID - Boundary Test",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Boundary test: negative IDs are outside the valid domain and must be rejected",
+              "pm.test('Negative ID is treated as invalid (expect 404)', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "// Document the actual API behaviour for this boundary case",
+              "pm.test('API returns a descriptive error for ID=-1', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    console.log('[Boundary] GET /products/-1 — Status: ' + pm.response.code + ' | Message: ' + jsonData.message);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/-1",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "-1"
+          ]
+        },
+        "description": "Step 4: GET /products/-1 — negative ID boundary. Document the status code and error message returned."
+      },
+      "response": []
+    },
+    {
+      "name": "2.5 GET Product with Non-Numeric ID - Invalid Input",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Invalid input test: a non-numeric ID type should be rejected by the API",
+              "pm.test('Non-numeric ID returns an error status (4xx)', function () {",
+              "    pm.expect(pm.response.code).to.be.within(400, 499);",
+              "});",
+              "",
+              "// Document the exact status code and message for the invalid type",
+              "pm.test('API returns a message for non-numeric ID', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    console.log('[Invalid Input] GET /products/abc — Status: ' + pm.response.code + ' | Message: ' + jsonData.message);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/abc",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "abc"
+          ]
+        },
+        "description": "Step 5: GET /products/abc — non-numeric ID. Document what status code and message the API returns."
+      },
+      "response": []
+    }
+  ]
+}

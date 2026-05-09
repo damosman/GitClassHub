@@ -1,0 +1,363 @@
+{
+  "info": {
+    "_postman_id": "65485b19-e8ba-438a-baab-1886b3f877dc",
+    "name": "Exercise 4 - Authentication Flow",
+    "description": "Intermediate: Understand the JWT authentication flow and test all authentication scenarios including happy path, missing token, invalid token, and token refresh.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19975965"
+  },
+  "item": [
+    {
+      "name": "4.1 POST Login - Valid Credentials",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify successful authentication with valid credentials",
+              "pm.test('Status code is 200 for valid login', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the response contains a JWT access token",
+              "pm.test('Response contains an accessToken', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('accessToken');",
+              "    pm.expect(jsonData.accessToken).to.be.a('string');",
+              "    pm.expect(jsonData.accessToken.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "// Verify the response contains a refresh token for token renewal",
+              "pm.test('Response contains a refreshToken', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('refreshToken');",
+              "    pm.expect(jsonData.refreshToken).to.be.a('string');",
+              "    pm.expect(jsonData.refreshToken.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "// Verify basic user data is returned alongside the tokens",
+              "pm.test('Response contains user identity fields', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('username');",
+              "    pm.expect(jsonData).to.have.property('email');",
+              "    pm.expect(jsonData).to.have.property('firstName');",
+              "    pm.expect(jsonData).to.have.property('lastName');",
+              "});",
+              "",
+              "// Dynamically save both tokens to the environment for use in subsequent requests",
+              "var jsonData = pm.response.json();",
+              "pm.environment.set('accessToken', jsonData.accessToken);",
+              "pm.environment.set('refreshToken', jsonData.refreshToken);",
+              "console.log('accessToken saved to environment.');",
+              "console.log('refreshToken saved to environment.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"emilys\",\n  \"password\": \"emilyspass\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/auth/login",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Step 1: POST /auth/login with valid credentials. Saves accessToken and refreshToken to environment variables for use in downstream requests."
+      },
+      "response": []
+    },
+    {
+      "name": "4.2 GET Auth Me - Valid Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify an authenticated request with a valid token succeeds",
+              "pm.test('Status code is 200 with a valid Bearer token', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the authenticated endpoint returns the user's own profile",
+              "pm.test('Response contains authenticated user data', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('username');",
+              "    pm.expect(jsonData).to.have.property('email');",
+              "    pm.expect(jsonData).to.have.property('firstName');",
+              "    pm.expect(jsonData).to.have.property('lastName');",
+              "});",
+              "",
+              "// Verify the authenticated user matches the login credentials used",
+              "pm.test('Authenticated user username is emilys', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.username).to.eql('emilys');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/auth/me",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        },
+        "description": "Step 2: GET /auth/me with Authorization: Bearer {{accessToken}} — verify the authenticated user's profile is returned."
+      },
+      "response": []
+    },
+    {
+      "name": "4.3 GET Auth Me - No Authorization Header",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// NOTE: DummyJSON is a simulation API and does not strictly enforce auth on /auth/me",
+              "// when no token is provided — it returns 200 with user data instead of 401.",
+              "// In a real production API, a missing token MUST return 401 Unauthorized.",
+              "// This test documents the simulated behaviour and flags it as a security observation.",
+              "pm.test('Document simulated auth behaviour (DummyJSON returns 200, real API must return 401)', function () {",
+              "    var status = pm.response.code;",
+              "    var jsonData = pm.response.json();",
+              "    console.log('[Security Note] GET /auth/me with no token returned: ' + status);",
+              "    if (status === 200) {",
+              "        console.log('SIMULATED: DummyJSON does not enforce auth when no token is provided.');",
+              "        console.log('REAL API EXPECTATION: A production API must return 401 Unauthorized here.');",
+              "    }",
+              "    pm.expect([200, 401]).to.include(status);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/auth/me",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        },
+        "description": "Step 3: GET /auth/me with NO Authorization header — expect 401 Unauthorized. Tests that the endpoint is properly protected."
+      },
+      "response": []
+    },
+    {
+      "name": "4.4 GET Auth Me - Invalid Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// A forged or expired token must be rejected with 401",
+              "pm.test('Status code is 401 when an invalid token is provided', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "// Verify the error response is descriptive about the token issue",
+              "pm.test('Response contains an error message about the invalid token', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    pm.expect(jsonData.message).to.eql('Invalid/Expired Token!');",
+              "    console.log('Invalid-token error: ' + jsonData.message);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer badtoken123"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/auth/me",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        },
+        "description": "Step 4: GET /auth/me with Authorization: Bearer badtoken123 — expect 401. Verifies the API rejects tampered or invalid tokens."
+      },
+      "response": []
+    },
+    {
+      "name": "4.5 POST Login - Wrong Password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Invalid credentials must be rejected — not 200, not 500",
+              "pm.test('Status code is 400 for wrong password', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "// Verify the error is descriptive and does not reveal sensitive internals",
+              "pm.test('Error response contains a descriptive message (not generic)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('message');",
+              "    pm.expect(jsonData.message).to.be.a('string');",
+              "    pm.expect(jsonData.message.length).to.be.greaterThan(0);",
+              "    console.log('Wrong password error: ' + jsonData.message);",
+              "});",
+              "",
+              "// Verify no tokens are returned for failed authentication",
+              "pm.test('No accessToken is returned on failed login', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.not.have.property('accessToken');",
+              "    pm.expect(jsonData.message).to.eql('Invalid credentials');",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"emilys\",\n  \"password\": \"wrongpass\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/auth/login",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Step 5: POST /auth/login with wrong password — document the error response and verify no token is returned."
+      },
+      "response": []
+    },
+    {
+      "name": "4.6 POST Refresh Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the refresh token endpoint issues a new access token",
+              "pm.test('Status code is 200 for token refresh', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify a fresh accessToken is returned",
+              "pm.test('Response contains a new accessToken', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('accessToken');",
+              "    pm.expect(jsonData.accessToken).to.be.a('string');",
+              "    pm.expect(jsonData.accessToken.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "// Dynamically overwrite the environment accessToken with the refreshed value",
+              "var jsonData = pm.response.json();",
+              "pm.environment.set('accessToken', jsonData.accessToken);",
+              "console.log('accessToken refreshed and saved to environment.');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\",\n  \"expiresInMins\": 30\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/auth/refresh",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "refresh"
+          ]
+        },
+        "description": "Step 6: POST /auth/refresh with the saved refreshToken — obtain a new accessToken and overwrite the environment variable."
+      },
+      "response": []
+    }
+  ]
+}

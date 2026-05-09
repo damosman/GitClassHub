@@ -1,0 +1,305 @@
+{
+  "info": {
+    "_postman_id": "09f374b8-24a0-48ed-8919-d2aa8cd4238b",
+    "name": "Exercise 1 - Explore the Products API",
+    "description": "Beginner: Understand GET requests, query parameters, and field selection using the DummyJSON Products API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19975965"
+  },
+  "item": [
+    {
+      "name": "1.1 GET All Products",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the API returns a successful response",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the response body contains a non-empty products array",
+              "pm.test('Response contains a non-empty products array', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('products');",
+              "    pm.expect(jsonData.products).to.be.an('array');",
+              "    pm.expect(jsonData.products.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "// Verify the response includes required pagination metadata fields",
+              "pm.test('Response contains pagination metadata (total, skip, limit)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total');",
+              "    pm.expect(jsonData).to.have.property('skip');",
+              "    pm.expect(jsonData).to.have.property('limit');",
+              "});",
+              "",
+              "// Verify the API responds within an acceptable performance threshold",
+              "pm.test('Response time is under 2000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products"
+          ]
+        },
+        "description": "Step 1: Send GET /products and observe the overall response structure including pagination metadata."
+      },
+      "response": []
+    },
+    {
+      "name": "1.2 GET Single Product by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the specific product is returned successfully",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify a single product contains all expected domain fields",
+              "pm.test('Product has all expected fields', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('title');",
+              "    pm.expect(jsonData).to.have.property('price');",
+              "    pm.expect(jsonData).to.have.property('stock');",
+              "    pm.expect(jsonData).to.have.property('description');",
+              "    pm.expect(jsonData).to.have.property('category');",
+              "    pm.expect(jsonData).to.have.property('thumbnail');",
+              "    pm.expect(jsonData).to.have.property('rating');",
+              "});",
+              "",
+              "// Verify the returned product ID matches the requested ID",
+              "pm.test('Returned product ID matches requested ID (1)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.eql(1);",
+              "});",
+              "",
+              "// Verify price is a positive number",
+              "pm.test('Product price is a positive number', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.price).to.be.a('number');",
+              "    pm.expect(jsonData.price).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/1",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
+        },
+        "description": "Step 2: GET /products/1 — retrieve a single product and inspect all available fields."
+      },
+      "response": []
+    },
+    {
+      "name": "1.3 GET Product with Field Selection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the field selection query parameter is honoured",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify only the four requested fields are present",
+              "pm.test('Only selected fields (id, title, price, stock) are returned', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('title');",
+              "    pm.expect(jsonData).to.have.property('price');",
+              "    pm.expect(jsonData).to.have.property('stock');",
+              "});",
+              "",
+              "// Verify non-selected fields are stripped from the response",
+              "pm.test('Non-selected fields are excluded (description, category, thumbnail)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.not.have.property('description');",
+              "    pm.expect(jsonData).to.not.have.property('category');",
+              "    pm.expect(jsonData).to.not.have.property('thumbnail');",
+              "    pm.expect(jsonData).to.not.have.property('rating');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/1?select=id,title,price,stock",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ],
+          "query": [
+            {
+              "key": "select",
+              "value": "id,title,price,stock"
+            }
+          ]
+        },
+        "description": "Step 3: GET /products/1?select=id,title,price,stock — verify field projection returns only the requested fields."
+      },
+      "response": []
+    },
+    {
+      "name": "1.4 GET Products with Pagination",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the paginated request succeeds",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the limit parameter is respected — exactly 5 products returned",
+              "pm.test('Exactly 5 products returned (limit=5)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.products.length).to.eql(5);",
+              "});",
+              "",
+              "// Verify the skip offset is reflected in the response metadata",
+              "pm.test('Skip value is 10 in response metadata', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.skip).to.eql(10);",
+              "});",
+              "",
+              "// Verify the limit value is reflected in the response metadata",
+              "pm.test('Limit value is 5 in response metadata', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.limit).to.eql(5);",
+              "});",
+              "",
+              "// Invariant: skip + returned count must never exceed the total",
+              "pm.test('skip + products.length does not exceed total', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.skip + jsonData.products.length).to.be.at.most(jsonData.total);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products?limit=5&skip=10",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5"
+            },
+            {
+              "key": "skip",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Step 4: GET /products?limit=5&skip=10 — verify 5 products are returned starting from the 11th item."
+      },
+      "response": []
+    },
+    {
+      "name": "1.5 Search Products by Keyword",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the search endpoint returns a successful response",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify search results are not empty for the keyword 'phone'",
+              "pm.test('Search results are not empty', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.products).to.be.an('array');",
+              "    pm.expect(jsonData.products.length).to.be.greaterThan(0);",
+              "});",
+              "",
+              "// NOTE: DummyJSON search is full-text across title, description, brand, and other",
+              "// fields — not title-only. Some results may not have 'phone' in their title.",
+              "// We assert that at least one result is title-relevant and log all titles for review.",
+              "pm.test('At least one returned product title contains the keyword phone', function () {",
+              "    var jsonData = pm.response.json();",
+              "    var titlesWithPhone = jsonData.products.filter(function (p) {",
+              "        return p.title.toLowerCase().includes('phone');",
+              "    });",
+              "    console.log('Products matching phone in title: ' + titlesWithPhone.length + ' of ' + jsonData.products.length);",
+              "    jsonData.products.forEach(function (p) { console.log(' - ' + p.title); });",
+              "    pm.expect(titlesWithPhone.length).to.be.greaterThan(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/products/search?q=phone",
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "phone"
+            }
+          ]
+        },
+        "description": "Step 5: GET /products/search?q=phone — verify search returns matching products with 'phone' in every title."
+      },
+      "response": []
+    }
+  ]
+}
