@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "ex02-test-status-codes",
+    "_postman_id": "760c0c65-8f1f-49de-9ddf-ea2cc1e00f63",
     "name": "Exercise 2 - Test Status Codes Systematically",
     "description": "Beginner: Learn to test boundary and invalid inputs systematically against the DummyJSON Products API.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19975965"
   },
   "item": [
     {
@@ -40,8 +41,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/1",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "1"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
         },
         "description": "Step 1: GET /products/1 — happy path for a known valid ID. Expect 200. Record response time."
       },
@@ -77,8 +83,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/99999",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "99999"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "99999"
+          ]
         },
         "description": "Step 2: GET /products/99999 — ID beyond range. Expect 404. Read the error message to verify it is descriptive."
       },
@@ -112,8 +123,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/0",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "0"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "0"
+          ]
         },
         "description": "Step 3: GET /products/0 — boundary test. Is 0 a valid ID? Document the status code and message."
       },
@@ -147,8 +163,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/-1",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "-1"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "-1"
+          ]
         },
         "description": "Step 4: GET /products/-1 — negative ID boundary. Document the status code and error message returned."
       },
@@ -182,8 +203,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/abc",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "abc"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "abc"
+          ]
         },
         "description": "Step 5: GET /products/abc — non-numeric ID. Document what status code and message the API returns."
       },

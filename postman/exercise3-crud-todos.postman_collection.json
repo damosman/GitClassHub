@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "ex03-crud-todos",
+    "_postman_id": "835c916e-5de2-460f-bced-ccbd40f089cf",
     "name": "Exercise 3 - CRUD on Todos",
     "description": "Intermediate: Master the full CRUD cycle (Create, Read, Update, Delete) on the DummyJSON Todos resource. Understand simulated vs real API behaviour.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19975965"
   },
   "item": [
     {
@@ -45,8 +46,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/todos/1",
-          "host": ["{{BASE_URL}}"],
-          "path": ["todos", "1"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "todos",
+            "1"
+          ]
         },
         "description": "Step 1: GET /todos/1 — read a single todo and note the schema: id, todo, completed, userId."
       },
@@ -115,8 +121,13 @@
         },
         "url": {
           "raw": "{{BASE_URL}}/todos/add",
-          "host": ["{{BASE_URL}}"],
-          "path": ["todos", "add"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "todos",
+            "add"
+          ]
         },
         "description": "Step 2: POST /todos/add — create a new todo and assert the new ID is returned and text is echoed. Saves newTodoId to environment."
       },
@@ -170,8 +181,13 @@
         },
         "url": {
           "raw": "{{BASE_URL}}/todos/1",
-          "host": ["{{BASE_URL}}"],
-          "path": ["todos", "1"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "todos",
+            "1"
+          ]
         },
         "description": "Step 3: PATCH /todos/1 with completed=true — verify the field updates while the todo text remains unchanged."
       },
@@ -214,8 +230,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/todos/1",
-          "host": ["{{BASE_URL}}"],
-          "path": ["todos", "1"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "todos",
+            "1"
+          ]
         },
         "description": "Step 4: DELETE /todos/1 — verify the response contains isDeleted: true and a deletedOn timestamp."
       },
@@ -252,8 +273,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/todos/1",
-          "host": ["{{BASE_URL}}"],
-          "path": ["todos", "1"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "todos",
+            "1"
+          ]
         },
         "description": "Step 5: GET /todos/1 after DELETE — in a real API this would 404. DummyJSON simulates deletion without persistence. Document and understand the difference."
       },

@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "ex04-authentication-flow",
+    "_postman_id": "65485b19-e8ba-438a-baab-1886b3f877dc",
     "name": "Exercise 4 - Authentication Flow",
     "description": "Intermediate: Understand the JWT authentication flow and test all authentication scenarios including happy path, missing token, invalid token, and token refresh.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19975965"
   },
   "item": [
     {
@@ -74,8 +75,13 @@
         },
         "url": {
           "raw": "{{BASE_URL}}/auth/login",
-          "host": ["{{BASE_URL}}"],
-          "path": ["auth", "login"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
         },
         "description": "Step 1: POST /auth/login with valid credentials. Saves accessToken and refreshToken to environment variables for use in downstream requests."
       },
@@ -123,8 +129,13 @@
         ],
         "url": {
           "raw": "{{BASE_URL}}/auth/me",
-          "host": ["{{BASE_URL}}"],
-          "path": ["auth", "me"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
         },
         "description": "Step 2: GET /auth/me with Authorization: Bearer {{accessToken}} — verify the authenticated user's profile is returned."
       },
@@ -136,7 +147,6 @@
         {
           "listen": "test",
           "script": {
-            "type": "text/javascript",
             "exec": [
               "// NOTE: DummyJSON is a simulation API and does not strictly enforce auth on /auth/me",
               "// when no token is provided — it returns 200 with user data instead of 401.",
@@ -144,14 +154,19 @@
               "// This test documents the simulated behaviour and flags it as a security observation.",
               "pm.test('Document simulated auth behaviour (DummyJSON returns 200, real API must return 401)', function () {",
               "    var status = pm.response.code;",
+              "    var jsonData = pm.response.json();",
               "    console.log('[Security Note] GET /auth/me with no token returned: ' + status);",
               "    if (status === 200) {",
               "        console.log('SIMULATED: DummyJSON does not enforce auth when no token is provided.');",
               "        console.log('REAL API EXPECTATION: A production API must return 401 Unauthorized here.');",
               "    }",
+              "    pm.expect(jsonData.message).to.eql('Access Token is required');",
               "    pm.expect([200, 401]).to.include(status);",
               "});"
-            ]
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
@@ -160,8 +175,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/auth/me",
-          "host": ["{{BASE_URL}}"],
-          "path": ["auth", "me"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
         },
         "description": "Step 3: GET /auth/me with NO Authorization header — expect 401 Unauthorized. Tests that the endpoint is properly protected."
       },
@@ -173,7 +193,6 @@
         {
           "listen": "test",
           "script": {
-            "type": "text/javascript",
             "exec": [
               "// A forged or expired token must be rejected with 401",
               "pm.test('Status code is 401 when an invalid token is provided', function () {",
@@ -184,9 +203,13 @@
               "pm.test('Response contains an error message about the invalid token', function () {",
               "    var jsonData = pm.response.json();",
               "    pm.expect(jsonData).to.have.property('message');",
+              "    pm.expect(jsonData.message).to.eql('Invalid/Expired Token!');",
               "    console.log('Invalid-token error: ' + jsonData.message);",
               "});"
-            ]
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
@@ -200,8 +223,13 @@
         ],
         "url": {
           "raw": "{{BASE_URL}}/auth/me",
-          "host": ["{{BASE_URL}}"],
-          "path": ["auth", "me"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
         },
         "description": "Step 4: GET /auth/me with Authorization: Bearer badtoken123 — expect 401. Verifies the API rejects tampered or invalid tokens."
       },
@@ -213,7 +241,6 @@
         {
           "listen": "test",
           "script": {
-            "type": "text/javascript",
             "exec": [
               "// Invalid credentials must be rejected — not 200, not 500",
               "pm.test('Status code is 400 for wrong password', function () {",
@@ -233,8 +260,12 @@
               "pm.test('No accessToken is returned on failed login', function () {",
               "    var jsonData = pm.response.json();",
               "    pm.expect(jsonData).to.not.have.property('accessToken');",
+              "    pm.expect(jsonData.message).to.eql('Invalid credentials');",
               "});"
-            ]
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
@@ -257,8 +288,13 @@
         },
         "url": {
           "raw": "{{BASE_URL}}/auth/login",
-          "host": ["{{BASE_URL}}"],
-          "path": ["auth", "login"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
         },
         "description": "Step 5: POST /auth/login with wrong password — document the error response and verify no token is returned."
       },
@@ -312,8 +348,13 @@
         },
         "url": {
           "raw": "{{BASE_URL}}/auth/refresh",
-          "host": ["{{BASE_URL}}"],
-          "path": ["auth", "refresh"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "auth",
+            "refresh"
+          ]
         },
         "description": "Step 6: POST /auth/refresh with the saved refreshToken — obtain a new accessToken and overwrite the environment variable."
       },

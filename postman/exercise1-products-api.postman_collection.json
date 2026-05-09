@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "ex01-explore-products-api",
+    "_postman_id": "09f374b8-24a0-48ed-8919-d2aa8cd4238b",
     "name": "Exercise 1 - Explore the Products API",
     "description": "Beginner: Understand GET requests, query parameters, and field selection using the DummyJSON Products API.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "19975965"
   },
   "item": [
     {
@@ -48,8 +49,12 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products"
+          ]
         },
         "description": "Step 1: Send GET /products and observe the overall response structure including pagination metadata."
       },
@@ -102,8 +107,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/1",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "1"]
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ]
         },
         "description": "Step 2: GET /products/1 — retrieve a single product and inspect all available fields."
       },
@@ -148,8 +158,13 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/1?select=id,title,price,stock",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "1"],
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "1"
+          ],
           "query": [
             {
               "key": "select",
@@ -206,11 +221,21 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products?limit=5&skip=10",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products"],
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products"
+          ],
           "query": [
-            {"key": "limit", "value": "5"},
-            {"key": "skip", "value": "10"}
+            {
+              "key": "limit",
+              "value": "5"
+            },
+            {
+              "key": "skip",
+              "value": "10"
+            }
           ]
         },
         "description": "Step 4: GET /products?limit=5&skip=10 — verify 5 products are returned starting from the 11th item."
@@ -258,10 +283,18 @@
         "header": [],
         "url": {
           "raw": "{{BASE_URL}}/products/search?q=phone",
-          "host": ["{{BASE_URL}}"],
-          "path": ["products", "search"],
+          "host": [
+            "{{BASE_URL}}"
+          ],
+          "path": [
+            "products",
+            "search"
+          ],
           "query": [
-            {"key": "q", "value": "phone"}
+            {
+              "key": "q",
+              "value": "phone"
+            }
           ]
         },
         "description": "Step 5: GET /products/search?q=phone — verify search returns matching products with 'phone' in every title."
