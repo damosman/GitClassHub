@@ -1,0 +1,284 @@
+{
+  "info": {
+    "_postman_id": "ex05-pagination-deep-dive",
+    "name": "Exercise 5 - Pagination Deep Dive",
+    "description": "Intermediate: Master pagination testing and boundary conditions using the DummyJSON Users API. Verify page navigation, boundary limits, and the invariant that skip + count never exceeds total.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "5.1 GET Users - Page 1 (limit=10, skip=0)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the first page of users loads successfully",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify exactly 10 users are returned as per the limit",
+              "pm.test('Page 1 returns exactly 10 users (limit=10)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.users.length).to.eql(10);",
+              "});",
+              "",
+              "// Verify pagination metadata is present and save it for downstream requests",
+              "pm.test('Response contains total users count', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('total');",
+              "    pm.expect(jsonData.total).to.be.a('number');",
+              "    pm.expect(jsonData.total).to.be.greaterThan(0);",
+              "    // Save pagination state for use in subsequent requests",
+              "    pm.environment.set('totalUsers', jsonData.total);",
+              "    pm.environment.set('pageSize', 10);",
+              "    var totalPages = Math.ceil(jsonData.total / 10);",
+              "    pm.environment.set('totalPages', totalPages);",
+              "    // Save first page's first user ID to detect page change in request 5.2",
+              "    pm.environment.set('firstPageFirstUserId', jsonData.users[0].id);",
+              "    // Calculate last page skip offset and save for request 5.3",
+              "    var lastPageSkip = Math.floor((jsonData.total - 1) / 10) * 10;",
+              "    pm.environment.set('lastPageSkip', lastPageSkip);",
+              "    console.log('Total users: ' + jsonData.total + ' | Total pages: ' + totalPages + ' | Last page skip: ' + lastPageSkip);",
+              "});",
+              "",
+              "// Invariant: skip + users.length must never exceed total",
+              "pm.test('Invariant: skip + users.length does not exceed total', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.skip + jsonData.users.length).to.be.at.most(jsonData.total);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/users?limit=10&skip=0",
+          "host": ["{{BASE_URL}}"],
+          "path": ["users"],
+          "query": [
+            {"key": "limit", "value": "10"},
+            {"key": "skip", "value": "0"}
+          ]
+        },
+        "description": "Step 1: GET /users?limit=10&skip=0 — fetch page 1. Note the total. Saves totalUsers, totalPages, lastPageSkip, and firstPageFirstUserId to environment."
+      },
+      "response": []
+    },
+    {
+      "name": "5.2 GET Users - Page 2 (limit=10, skip=10)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify page 2 loads successfully",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify 10 users are returned on page 2",
+              "pm.test('Page 2 returns 10 users', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.users.length).to.eql(10);",
+              "});",
+              "",
+              "// Verify page 2 starts at a different user than page 1 (no overlap)",
+              "pm.test('First user ID on page 2 differs from first user ID on page 1', function () {",
+              "    var jsonData = pm.response.json();",
+              "    var page1FirstId = parseInt(pm.environment.get('firstPageFirstUserId'));",
+              "    var page2FirstId = jsonData.users[0].id;",
+              "    pm.expect(page2FirstId).to.not.eql(page1FirstId);",
+              "    console.log('Page 1 first ID: ' + page1FirstId + ' | Page 2 first ID: ' + page2FirstId);",
+              "});",
+              "",
+              "// Verify the total is consistent across pages",
+              "pm.test('Total is consistent with page 1 response', function () {",
+              "    var jsonData = pm.response.json();",
+              "    var savedTotal = parseInt(pm.environment.get('totalUsers'));",
+              "    pm.expect(jsonData.total).to.eql(savedTotal);",
+              "});",
+              "",
+              "// Invariant: skip + users.length must never exceed total",
+              "pm.test('Invariant: skip + users.length does not exceed total', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.skip + jsonData.users.length).to.be.at.most(jsonData.total);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/users?limit=10&skip=10",
+          "host": ["{{BASE_URL}}"],
+          "path": ["users"],
+          "query": [
+            {"key": "limit", "value": "10"},
+            {"key": "skip", "value": "10"}
+          ]
+        },
+        "description": "Step 2: GET /users?limit=10&skip=10 — fetch page 2 and verify the first user ID differs from page 1, confirming no overlap."
+      },
+      "response": []
+    },
+    {
+      "name": "5.3 GET Users - Last Page",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Calculate the last page skip offset from the saved total (set in request 5.1)",
+              "var total = parseInt(pm.environment.get('totalUsers') || '100');",
+              "var pageSize = 10;",
+              "var lastPageSkip = Math.floor((total - 1) / pageSize) * pageSize;",
+              "pm.environment.set('lastPageSkip', lastPageSkip);",
+              "console.log('Calculated last page skip: ' + lastPageSkip + ' (total=' + total + ')');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the last page loads successfully",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the last page may have fewer items than the page size (remainder page)",
+              "pm.test('Last page returns fewer than or equal to 10 users', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.users.length).to.be.at.most(10);",
+              "    pm.expect(jsonData.users.length).to.be.greaterThan(0);",
+              "    console.log('Last page user count: ' + jsonData.users.length + ' (may be less than page size if total is not a multiple of 10)');",
+              "});",
+              "",
+              "// Invariant: skip + users.length must not exceed total — critical on the last page",
+              "pm.test('Invariant: skip + users.length does not exceed total (last page)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.skip + jsonData.users.length).to.be.at.most(jsonData.total);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/users?limit=10&skip={{lastPageSkip}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["users"],
+          "query": [
+            {"key": "limit", "value": "10"},
+            {"key": "skip", "value": "{{lastPageSkip}}"}
+          ]
+        },
+        "description": "Step 3: GET /users?limit=10&skip={{lastPageSkip}} — fetch the last page. lastPageSkip is calculated dynamically in the pre-request script. Verify result count may be less than the page size."
+      },
+      "response": []
+    },
+    {
+      "name": "5.4 GET Users - Zero Limit",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Document what DummyJSON does when limit=0 is supplied",
+              "pm.test('API responds successfully when limit=0', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Observe and document the limit=0 behaviour (DummyJSON returns all users)",
+              "pm.test('Document limit=0 behaviour', function () {",
+              "    var jsonData = pm.response.json();",
+              "    var returnedCount = jsonData.users ? jsonData.users.length : 0;",
+              "    console.log('[limit=0] Users returned: ' + returnedCount + ' | Limit in response: ' + jsonData.limit);",
+              "    if (returnedCount > 10) {",
+              "        console.log('OBSERVATION: limit=0 returns all users (DummyJSON interprets 0 as no limit).');",
+              "    } else if (returnedCount === 0) {",
+              "        console.log('OBSERVATION: limit=0 returns zero results.');",
+              "    }",
+              "    pm.expect(returnedCount).to.be.a('number');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/users?limit=0",
+          "host": ["{{BASE_URL}}"],
+          "path": ["users"],
+          "query": [
+            {"key": "limit", "value": "0"}
+          ]
+        },
+        "description": "Step 4: GET /users?limit=0 — document what happens. DummyJSON treats limit=0 as returning all users. Check the docs to understand the behaviour."
+      },
+      "response": []
+    },
+    {
+      "name": "5.5 GET Users - Oversized Limit (limit=200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the API handles an oversized limit gracefully",
+              "pm.test('Status code is 200 for oversized limit', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify returned users count does not exceed the actual total",
+              "pm.test('Returned users count does not exceed the total available', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.users.length).to.be.at.most(jsonData.total);",
+              "    console.log('[limit=200] Users returned: ' + jsonData.users.length + ' | Total in DB: ' + jsonData.total);",
+              "    if (jsonData.users.length < 200) {",
+              "        console.log('OBSERVATION: limit=200 is capped at the total dataset size (' + jsonData.total + ').');",
+              "    }",
+              "});",
+              "",
+              "// Invariant: skip + users.length must never exceed total even for large limits",
+              "pm.test('Invariant: skip + users.length does not exceed total', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.skip + jsonData.users.length).to.be.at.most(jsonData.total);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/users?limit=200",
+          "host": ["{{BASE_URL}}"],
+          "path": ["users"],
+          "query": [
+            {"key": "limit", "value": "200"}
+          ]
+        },
+        "description": "Step 5: GET /users?limit=200 — does the API return more than the total? Verify limit is capped at the dataset size and the skip+count invariant still holds."
+      },
+      "response": []
+    }
+  ]
+}

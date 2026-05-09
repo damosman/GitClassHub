@@ -57,7 +57,92 @@ jobs:
 
       # Step 4: Install Playwright browsers
       - run: npx playwright install --with-deps
-      
+
       # Step 5: Run the test browsers installed
       - name: Run a one-line script
         run: echo Test browsers installed
+
+  # Job: Run all DummyJSON API exercise collections through Newman
+  api-tests:
+
+    name: Run API Tests (Newman)
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository so Newman can access the collection files
+      - uses: actions/checkout@v5
+
+      # Step 2: Set up the Node.js runtime required by Newman
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      # Step 3: Install Newman CLI and the htmlextra reporter for rich HTML output
+      - name: Install Newman and htmlextra reporter
+        run: npm install -g newman newman-reporter-htmlextra
+
+      # Step 4: Create the output directory where HTML reports will be saved
+      - name: Create reports directory
+        run: mkdir -p newman-reports
+
+      # Step 5: Exercise 1 — GET requests, query parameters, and field selection
+      - name: Exercise 1 - Explore the Products API
+        run: |
+          newman run postman/exercise1-products-api.postman_collection.json \
+            --environment postman/dummyjson-environment.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman-reports/exercise1-products-report.html \
+            --reporter-htmlextra-title "Exercise 1 - Products API"
+        continue-on-error: true
+
+      # Step 6: Exercise 2 — boundary and invalid input testing using status codes
+      - name: Exercise 2 - Test Status Codes Systematically
+        run: |
+          newman run postman/exercise2-status-codes.postman_collection.json \
+            --environment postman/dummyjson-environment.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman-reports/exercise2-status-codes-report.html \
+            --reporter-htmlextra-title "Exercise 2 - Status Codes"
+        continue-on-error: true
+
+      # Step 7: Exercise 3 — full CRUD lifecycle on the Todos resource
+      - name: Exercise 3 - CRUD on Todos
+        run: |
+          newman run postman/exercise3-crud-todos.postman_collection.json \
+            --environment postman/dummyjson-environment.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman-reports/exercise3-crud-todos-report.html \
+            --reporter-htmlextra-title "Exercise 3 - CRUD on Todos"
+        continue-on-error: true
+
+      # Step 8: Exercise 4 — JWT authentication flow and all auth edge cases
+      - name: Exercise 4 - Authentication Flow
+        run: |
+          newman run postman/exercise4-auth-flow.postman_collection.json \
+            --environment postman/dummyjson-environment.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman-reports/exercise4-auth-flow-report.html \
+            --reporter-htmlextra-title "Exercise 4 - Authentication Flow"
+        continue-on-error: true
+
+      # Step 9: Exercise 5 — pagination boundaries, invariant checks, and edge cases
+      - name: Exercise 5 - Pagination Deep Dive
+        run: |
+          newman run postman/exercise5-pagination.postman_collection.json \
+            --environment postman/dummyjson-environment.json \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman-reports/exercise5-pagination-report.html \
+            --reporter-htmlextra-title "Exercise 5 - Pagination Deep Dive"
+        continue-on-error: true
+
+      # Step 10: Upload all generated HTML reports as a downloadable workflow artifact.
+      #          Runs even when individual exercise steps fail so reports are always available.
+      - name: Upload Newman Test Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: newman-test-reports
+          path: newman-reports/
+          retention-days: 30

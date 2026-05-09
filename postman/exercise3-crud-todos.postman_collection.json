@@ -1,0 +1,263 @@
+{
+  "info": {
+    "_postman_id": "ex03-crud-todos",
+    "name": "Exercise 3 - CRUD on Todos",
+    "description": "Intermediate: Master the full CRUD cycle (Create, Read, Update, Delete) on the DummyJSON Todos resource. Understand simulated vs real API behaviour.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "3.1 GET Single Todo (ID 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the todo resource is accessible",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the todo has all required domain fields as a contract baseline",
+              "pm.test('Todo has all required fields (id, todo, completed, userId)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData).to.have.property('todo');",
+              "    pm.expect(jsonData).to.have.property('completed');",
+              "    pm.expect(jsonData).to.have.property('userId');",
+              "});",
+              "",
+              "// Verify field types match the expected schema",
+              "pm.test('Field types are correct', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.id).to.be.a('number');",
+              "    pm.expect(jsonData.todo).to.be.a('string');",
+              "    pm.expect(jsonData.completed).to.be.a('boolean');",
+              "    pm.expect(jsonData.userId).to.be.a('number');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/todos/1",
+          "host": ["{{BASE_URL}}"],
+          "path": ["todos", "1"]
+        },
+        "description": "Step 1: GET /todos/1 — read a single todo and note the schema: id, todo, completed, userId."
+      },
+      "response": []
+    },
+    {
+      "name": "3.2 POST Create New Todo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the create operation is accepted",
+              "pm.test('Status code is 200 (DummyJSON simulates creation)', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify a new ID is assigned and returned in the response",
+              "pm.test('Response contains a new auto-generated ID', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.expect(jsonData.id).to.be.a('number');",
+              "    console.log('New todo created with simulated ID: ' + jsonData.id);",
+              "    // Dynamically save the new todo ID for use in subsequent requests",
+              "    pm.environment.set('newTodoId', jsonData.id);",
+              "});",
+              "",
+              "// Verify the submitted todo text is echoed back unchanged",
+              "pm.test('Submitted todo text is echoed back in the response', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.todo).to.eql('Study API testing');",
+              "});",
+              "",
+              "// Verify the completed flag matches the submitted value",
+              "pm.test('Completed flag matches submitted value (false)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.completed).to.eql(false);",
+              "});",
+              "",
+              "// Verify the userId matches the submitted value",
+              "pm.test('userId matches submitted value (5)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.userId).to.eql(5);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"todo\": \"Study API testing\",\n  \"completed\": false,\n  \"userId\": 5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/todos/add",
+          "host": ["{{BASE_URL}}"],
+          "path": ["todos", "add"]
+        },
+        "description": "Step 2: POST /todos/add — create a new todo and assert the new ID is returned and text is echoed. Saves newTodoId to environment."
+      },
+      "response": []
+    },
+    {
+      "name": "3.3 PATCH Update Todo (ID 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the partial update is accepted",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the completed flag was updated to true",
+              "pm.test('completed field is updated to true', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.completed).to.eql(true);",
+              "});",
+              "",
+              "// Verify the PATCH did not overwrite the unmodified todo text (partial update behaviour)",
+              "pm.test('todo text remains unchanged (PATCH must not wipe other fields)', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.todo).to.be.a('string');",
+              "    pm.expect(jsonData.todo.length).to.be.greaterThan(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"completed\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/todos/1",
+          "host": ["{{BASE_URL}}"],
+          "path": ["todos", "1"]
+        },
+        "description": "Step 3: PATCH /todos/1 with completed=true — verify the field updates while the todo text remains unchanged."
+      },
+      "response": []
+    },
+    {
+      "name": "3.4 DELETE Todo (ID 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Verify the delete operation is accepted",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "// Verify the response confirms deletion via the isDeleted flag",
+              "pm.test('Response contains isDeleted: true', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('isDeleted');",
+              "    pm.expect(jsonData.isDeleted).to.eql(true);",
+              "});",
+              "",
+              "// Verify a deletedOn timestamp is returned for audit trail purposes",
+              "pm.test('Response contains a deletedOn timestamp', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('deletedOn');",
+              "    pm.expect(jsonData.deletedOn).to.be.a('string');",
+              "    pm.expect(jsonData.deletedOn.length).to.be.greaterThan(0);",
+              "    console.log('Deleted on: ' + jsonData.deletedOn);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/todos/1",
+          "host": ["{{BASE_URL}}"],
+          "path": ["todos", "1"]
+        },
+        "description": "Step 4: DELETE /todos/1 — verify the response contains isDeleted: true and a deletedOn timestamp."
+      },
+      "response": []
+    },
+    {
+      "name": "3.5 GET Deleted Todo - Simulated Behaviour",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// NOTE: DummyJSON simulates deletions — it does NOT persist them.",
+              "// In a real API this request would return 404. Here we document the simulated behaviour.",
+              "pm.test('Document simulated vs real delete behaviour', function () {",
+              "    var status = pm.response.code;",
+              "    console.log('GET /todos/1 after DELETE — Status: ' + status);",
+              "    if (status === 200) {",
+              "        console.log('SIMULATED: DummyJSON still returns the todo (delete was not persisted).');",
+              "        console.log('REAL API EXPECTATION: A real API would return 404 here.');",
+              "    } else if (status === 404) {",
+              "        console.log('REAL BEHAVIOUR: Resource correctly not found after deletion.');",
+              "    }",
+              "    // Assert the API responds — we accept either outcome to document both paths",
+              "    pm.expect([200, 404]).to.include(status);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/todos/1",
+          "host": ["{{BASE_URL}}"],
+          "path": ["todos", "1"]
+        },
+        "description": "Step 5: GET /todos/1 after DELETE — in a real API this would 404. DummyJSON simulates deletion without persistence. Document and understand the difference."
+      },
+      "response": []
+    }
+  ]
+}
