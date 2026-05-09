@@ -37,7 +37,7 @@ jobs:
           echo Add other actions to build,
           echo test, and deploy your project.
 
-  tests:
+  ui-tests:
 
     name: Run Tests
 
@@ -60,7 +60,7 @@ jobs:
 
       # Step 5: Run the test browsers installed
       - name: Run a one-line script
-        run: echo Test browsers installed
+        run: npx playwright test 
 
   # Job: Run all DummyJSON API exercise collections through Newman
   api-tests:
